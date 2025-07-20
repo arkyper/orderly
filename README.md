@@ -1,5 +1,7 @@
 # Orderly E-commerce Backend
 
+A simple Spring Boot application for handling e-commerce order placement with inventory management and payment processing.
+
 ## Overview
 
 This project is a simple e-commerce backend system focusing on order placement with integrated inventory management. The core workflow for placing an order involves:
@@ -12,37 +14,79 @@ This project is a simple e-commerce backend system focusing on order placement w
 
 ## Technologies Used
 
-*   Java 17
-*   Spring Boot 3.2
-*   Maven
-*   Spring Data JPA (with H2 in-memory database for simplicity)
-*   Lombok (for reducing boilerplate code)
-*   JUnit 5 and Mockito (for testing)
-*   Google Generative AI SDK for Java (for potential future AI features)
+- **Java 17**
+- **Spring Boot 3.2.0**
+- **Maven** - Build tool
+- **H2 Database** - In-memory database
+- **JUnit 5** - Unit testing
+- **Mockito** - Mocking framework
+- **Spring Boot Starter Web** - REST API
+- **Spring Boot Starter Data JPA** - Data persistence
 
-## Components
 
-*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry entry point for the API. Responsible for parsing request bodies, validating input, and serializing responses.
-*   **Service:** Contains the business logic of the application. It orchestrates interactions between repositories and other services to fulfill requests. Examples include the order placement workflow, inventory updates, and payment processing.
-*   **Repository:** Provides an interface for interacting with the database. It abstracts away the details of data access and persistence, allowing the service layer to work with objects.
-*   **Models:** Represents the data structures used in the application. These often map directly to database tables and define the structure of the data being processed.
+## Project Structure
 
-## REST Endpoints
+```
+src/main/java/com/ecommerce/
+├── EcommerceApplication.java          # Main application class
+├── controller/
+│   ├── OrderController.java           # REST endpoints for orders
+│   └── InventoryController.java       # REST endpoints for inventory
+|   └── GlobalExceptionHandler.java    # Global exception handling
+├── service/
+│   ├── OrderService.java              # Order business logic
+│   ├── InventoryService.java          # Inventory management
+│   └── PaymentService.java            # Payment processing
+├── repository/
+│   ├── OrderRepository.java           # Order data access
+│   └── ProductRepository.java         # Product data access
+├── model/
+│   ├── Order.java                     # Order entity
+│   ├── Product.java                   # Product entity
+│   └── OrderItem.java                 # Order item entity
+├── dto/
+│   ├── OrderRequest.java              # Order creation request
+│   ├── OrderResponse.java             # Order response
+│   └── OrderItemRequest.java          # Order item request
+│   └── OrderItemResponse.java         # Order item response
+└── exception/
+    ├── ProductNotFoundException.java   # Custom exceptions
+    ├── OutOfStockException.java
+    └── PaymentFailedException.java
+```
 
-Here are the main REST endpoints provided by the application, along with sample request and response examples in JSON format:
 
-### 1. Place a New Order
+## Components Description
 
-`POST /orders`
+### Controllers
+- **OrderController**: Handles HTTP requests for order operations (create, retrieve)
+- **InventoryController**: Provides endpoints to check product stock levels
 
-Places a new order in the system.
+### Services
+- **OrderService**: Core business logic for order processing workflow
+- **InventoryService**: Manages product inventory, stock validation and deduction
+- **PaymentService**: Mock payment processing with configurable failure scenarios
 
-**Request Body Example:**
+### Repositories
+- **OrderRepository**: JPA repository for order persistence
+- **ProductRepository**: JPA repository for product data access
 
+### Models
+- **Order**: Order entity with customer info and order items
+- **Product**: Product entity with stock information
+- **OrderItem**: Individual items within an order
+
+
+## REST API Endpoints
+
+### Place Order
+**POST** `/orders`
+
+**Request Body:**
 ```json
 {
-  "customerEmail": "test@example.com",
-  "shippingAddress": "123 Main St, Anytown CA 91234",
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
   "items": [
     {
       "productId": 1,
@@ -56,120 +100,129 @@ Places a new order in the system.
 }
 ```
 
-**Response Body Example (Success - HTTP 201 Created):**
-
+**Response (Success - 201 Created):**
 ```json
 {
-  "orderId": 101,
-  "customerEmail": "test@example.com",
-  "shippingAddress": "123 Main St, Anytown CA 91234",
-  "totalAmount": 75.00,
-  "orderItems": [
+  "id": 1,
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
+  "totalAmount": 149.97,
+  "status": "COMPLETED",
+  "orderDate": "2024-01-15T10:30:00",
+  "items": [
     {
+      "id": 1,
       "productId": 1,
-      "productName": "Product A",
+      "productName": "Laptop",
       "quantity": 2,
-      "price": 25.00
+      "price": 59.99,
+      "subtotal": 119.98
     },
     {
+      "id": 2,
       "productId": 2,
-      "productName": "Product B",
+      "productName": "Mouse",
       "quantity": 1,
-      "price": 25.00
+      "price": 29.99,
+      "subtotal": 29.99
     }
   ]
 }
 ```
 
-**Response Body Example (Failure - HTTP 400 Bad Request or HTTP 500 Internal Server Error):**
-
+**Error Responses:**
 ```json
+// Product not found (404)
 {
-  "timestamp": "2023-10-27T10:30:00.123+00:00",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Product with ID 99 not found.",
-  "path": "/orders"
+  "error": "Product not found with id: 999"
 }
-```
-(Error response structure may vary based on the specific exception)
 
-### 2. Fetch Order by ID
-
-`GET /orders/{id}`
-
-Retrieves the details of a specific order.
-
-**Path Parameter:**
-
-*   `id`: The ID of the order to fetch.
-
-**Response Body Example (Success - HTTP 200 OK):**
-
-```json
+// Out of stock (400)
 {
-  "orderId": 101,
-  "customerEmail": "test@example.com",
-  "shippingAddress": "123 Main St, Anytown CA 91234",
-  "totalAmount": 75.00,
-  "orderItems": [
-    {
-      "productId": 1,
-      "productName": "Product A",
-      "quantity": 2,
-      "price": 25.00
-    },
-    {
-      "productId": 2,
-      "productName": "Product B",
-      "quantity": 1,
-      "price": 25.00
-    }
-  ]
+  "error": "Out of stock for product: Laptop. Available: 5, Requested: 10"
+}
+
+// Payment failed (400)
+{
+  "error": "Payment processing failed"
 }
 ```
 
-**Response Body Example (Order Not Found - HTTP 404 Not Found):**
+### Get Order by ID
+**GET** `/orders/{id}`
 
+**Response (200 OK):**
 ```json
 {
-  "timestamp": "2023-10-27T10:35:00.456+00:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Order with ID 999 not found.",
-  "path": "/orders/999"
+  "id": 1,
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
+  "totalAmount": 149.97,
+  "status": "COMPLETED",
+  "orderDate": "2024-01-15T10:30:00",
+  "items": [...]
 }
 ```
 
-### 3. Check Product Stock
+### Check Product Stock
+**GET** `/inventory/{productId}`
 
-`GET /inventory/{productId}`
-
-Retrieves the stock information for a specific product.
-
-**Path Parameter:**
-
-*   `productId`: The ID of the product to check.
-
-**Response Body Example (Success - HTTP 200 OK):**
-
+**Response (200 OK):**
 ```json
 {
   "productId": 1,
-  "productName": "Product A",
-  "price": 25.00,
-  "stockQuantity": 100
+  "productName": "Laptop",
+  "price": 59.99,
+  "stockQuantity": 8
 }
 ```
 
-**Response Body Example (Product Not Found - HTTP 404 Not Found):**
+## Running the Application
 
-```json
-{
-  "timestamp": "2023-10-27T10:40:00.789+00:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Product with ID 99 not found.",
-  "path": "/inventory/99"
-}
-```
+1. **Prerequisites**: Java 17, Maven
+2. **Clone/Download** the project files
+3. **Build**: `mvn clean install`
+4. **Run**: `mvn spring-boot:run`
+5. **Access**: Application runs on `http://localhost:8080`
+
+## Database
+
+- **H2 Console**: `http://localhost:8080/h2-console`
+- **JDBC URL**: `jdbc:h2:mem:testdb`
+- **Username**: `sa`
+- **Password**: (empty)
+
+## Sample Data
+
+The application initializes with sample products:
+- Product 1: Laptop ($59.99, Stock: 10)
+- Product 2: Mouse ($29.99, Stock: 50)
+- Product 3: Keyboard ($39.99, Stock: 25)
+
+## Testing
+
+Run unit tests with: `mvn test`
+
+The test suite covers:
+- Order service business logic
+- Inventory management
+- Payment processing scenarios
+- Edge cases (out of stock, payment failures, product not found)
+
+## Order Processing Workflow
+
+1. **Validation**: Check if all products exist
+2. **Stock Check**: Verify sufficient inventory
+3. **Stock Lock**: Reserve inventory for the order
+4. **Payment**: Process payment through mock service
+5. **Order Creation**: Save order to database
+6. **Stock Deduction**: Confirm inventory reduction
+7. **Response**: Return order confirmation
+
+## Error Handling
+
+The application handles various scenarios:
+- **Product Not Found**: Returns 404 with descriptive message
+- **Out Of Stock**: Returns 400 with current stock info
+- **Payment Failure**: Returns 400 with payment error
+- **Invalid Input**: Returns 400 with validation errors
