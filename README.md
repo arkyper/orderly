@@ -22,7 +22,7 @@ This project is a simple e-commerce backend system focusing on order placement w
 
 ## Components
 
-*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry point for the API. Responsible for parsing request bodies, validating input, and serializing responses.
+*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry entry point for the API. Responsible for parsing request bodies, validating input, and serializing responses.
 *   **Service:** Contains the business logic of the application. It orchestrates interactions between repositories and other services to fulfill requests. Examples include the order placement workflow, inventory updates, and payment processing.
 *   **Repository:** Provides an interface for interacting with the database. It abstracts away the details of data access and persistence, allowing the service layer to work with objects.
 *   **Models:** Represents the data structures used in the application. These often map directly to database tables and define the structure of the data being processed.
