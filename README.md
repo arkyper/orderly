@@ -13,7 +13,7 @@ This project is a simple e-commerce backend system focusing on order placement w
 ## Technologies Used
 
 *   Java 17
-*   Spring Boot 3.x
+*   Spring Boot 3.2
 *   Maven
 *   Spring Data JPA (with H2 in-memory database for simplicity)
 *   Lombok (for reducing boilerplate code)
@@ -22,14 +22,14 @@ This project is a simple e-commerce backend system focusing on order placement w
 
 ## Components
 
-*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry point for the API.
-*   **Service:** Contains the business logic of the application, such as the order placement workflow and inventory management.
-*   **Repository:** Provides an interface for interacting with the database (saving and retrieving data).
-*   **Models:** Represents the data structures used in the application (e.g., `Order`, `OrderItem`, `Product`).
+*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry point for the API. Responsible for parsing request bodies, validating input, and serializing responses.
+*   **Service:** Contains the business logic of the application. It orchestrates interactions between repositories and other services to fulfill requests. Examples include the order placement workflow, inventory updates, and payment processing.
+*   **Repository:** Provides an interface for interacting with the database. It abstracts away the details of data access and persistence, allowing the service layer to work with objects.
+*   **Models:** Represents the data structures used in the application. These often map directly to database tables and define the structure of the data being processed.
 
 ## REST Endpoints
 
-Here are the main REST endpoints provided by the application:
+Here are the main REST endpoints provided by the application, along with sample request and response examples in JSON format:
 
 ### 1. Place a New Order
 
