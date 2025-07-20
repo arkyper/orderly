@@ -29,6 +29,8 @@ This project is a simple e-commerce backend system focusing on order placement w
 ```
 src/main/java/com/ecommerce/
 ├── EcommerceApplication.java          # Main application class
+├── config/
+│   ├── DataInitializer.java           # Dummy data for testing
 ├── controller/
 │   ├── OrderController.java           # REST endpoints for orders
 │   └── InventoryController.java       # REST endpoints for inventory
@@ -51,6 +53,7 @@ src/main/java/com/ecommerce/
 │   └── OrderItemResponse.java         # Order item response
 └── exception/
     ├── ProductNotFoundException.java   # Custom exceptions
+    └── OrderNotFoundException.java
     ├── OutOfStockException.java
     └── PaymentFailedException.java
 ```
@@ -135,6 +138,11 @@ src/main/java/com/ecommerce/
 // Product not found (404)
 {
   "error": "Product not found with id: 999"
+}
+
+// Order not found (404)
+{
+  "error": "Order not found with id: 999"
 }
 
 // Out of stock (400)
@@ -223,6 +231,7 @@ The test suite covers:
 
 The application handles various scenarios:
 - **Product Not Found**: Returns 404 with descriptive message
+- **Order Not Found**: Returns 404 with descriptive message
 - **Out Of Stock**: Returns 400 with current stock info
 - **Payment Failure**: Returns 400 with payment error
 - **Invalid Input**: Returns 400 with validation errors
