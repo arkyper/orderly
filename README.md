@@ -1,10 +1,175 @@
-# Java API Service Starter
+# Orderly E-commerce Backend
 
-This is a minimal Java API service starter based on [Google Cloud Run Quickstart](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-java-service).
+## Overview
 
-## Getting Started
+This project is a simple e-commerce backend system focusing on order placement with integrated inventory management. The core workflow for placing an order involves:
 
-Server should run automatically when starting a workspace. To run manually, run:
-```sh
-mvn spring-boot:run
+1.  **Validation:** The system validates that all products in the order request exist.
+2.  **Stock Check and Lock:** It checks the available stock for each product and attempts to lock the required quantity to prevent overselling.
+3.  **Payment Processing:** A mock payment service is called to simulate payment processing.
+4.  **Order Saving:** If payment is successful, the order details are saved to the database.
+5.  **Stock Deduction:** Finally, the stock quantities for the ordered products are deducted.
+
+## Technologies Used
+
+*   Java 17
+*   Spring Boot 3.x
+*   Maven
+*   Spring Data JPA (with H2 in-memory database for simplicity)
+*   Lombok (for reducing boilerplate code)
+*   JUnit 5 and Mockito (for testing)
+*   Google Generative AI SDK for Java (for potential future AI features)
+
+## Components
+
+*   **Controller:** Handles incoming HTTP requests and returns responses. It acts as the entry point for the API.
+*   **Service:** Contains the business logic of the application, such as the order placement workflow and inventory management.
+*   **Repository:** Provides an interface for interacting with the database (saving and retrieving data).
+*   **Models:** Represents the data structures used in the application (e.g., `Order`, `OrderItem`, `Product`).
+
+## REST Endpoints
+
+Here are the main REST endpoints provided by the application:
+
+### 1. Place a New Order
+
+`POST /orders`
+
+Places a new order in the system.
+
+**Request Body Example:**
+
+```json
+{
+  "customerEmail": "test@example.com",
+  "shippingAddress": "123 Main St, Anytown CA 91234",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2
+    },
+    {
+      "productId": 2,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+**Response Body Example (Success - HTTP 201 Created):**
+
+```json
+{
+  "orderId": 101,
+  "customerEmail": "test@example.com",
+  "shippingAddress": "123 Main St, Anytown CA 91234",
+  "totalAmount": 75.00,
+  "orderItems": [
+    {
+      "productId": 1,
+      "productName": "Product A",
+      "quantity": 2,
+      "price": 25.00
+    },
+    {
+      "productId": 2,
+      "productName": "Product B",
+      "quantity": 1,
+      "price": 25.00
+    }
+  ]
+}
+```
+
+**Response Body Example (Failure - HTTP 400 Bad Request or HTTP 500 Internal Server Error):**
+
+```json
+{
+  "timestamp": "2023-10-27T10:30:00.123+00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Product with ID 99 not found.",
+  "path": "/orders"
+}
+```
+(Error response structure may vary based on the specific exception)
+
+### 2. Fetch Order by ID
+
+`GET /orders/{id}`
+
+Retrieves the details of a specific order.
+
+**Path Parameter:**
+
+*   `id`: The ID of the order to fetch.
+
+**Response Body Example (Success - HTTP 200 OK):**
+
+```json
+{
+  "orderId": 101,
+  "customerEmail": "test@example.com",
+  "shippingAddress": "123 Main St, Anytown CA 91234",
+  "totalAmount": 75.00,
+  "orderItems": [
+    {
+      "productId": 1,
+      "productName": "Product A",
+      "quantity": 2,
+      "price": 25.00
+    },
+    {
+      "productId": 2,
+      "productName": "Product B",
+      "quantity": 1,
+      "price": 25.00
+    }
+  ]
+}
+```
+
+**Response Body Example (Order Not Found - HTTP 404 Not Found):**
+
+```json
+{
+  "timestamp": "2023-10-27T10:35:00.456+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Order with ID 999 not found.",
+  "path": "/orders/999"
+}
+```
+
+### 3. Check Product Stock
+
+`GET /inventory/{productId}`
+
+Retrieves the stock information for a specific product.
+
+**Path Parameter:**
+
+*   `productId`: The ID of the product to check.
+
+**Response Body Example (Success - HTTP 200 OK):**
+
+```json
+{
+  "productId": 1,
+  "productName": "Product A",
+  "price": 25.00,
+  "stockQuantity": 100
+}
+```
+
+**Response Body Example (Product Not Found - HTTP 404 Not Found):**
+
+```json
+{
+  "timestamp": "2023-10-27T10:40:00.789+00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Product with ID 99 not found.",
+  "path": "/inventory/99"
+}
 ```
